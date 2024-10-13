@@ -1,52 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue.js After School Clubs</title>
-    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #333; color: white; }
-        header h1 { margin: 0; }
-        main { padding: 20px; }
-        .club-card { border: 1px solid #ddd; padding: 15px; margin: 10px; display: inline-block; width: 300px; }
-        .club-card img { width: 100%; }
-        .club-card h2 { margin: 0; font-size: 18px; }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <!-- Navbar -->
-        <header>
-            <h1 v-text="sitename"></h1>
-        </header>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Vue.js After School Clubs</title>
+		<script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+		/>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+			}
+			header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 10px;
+				background-color: #333;
+				color: white;
+			}
+			header h1 {
+				margin: 0;
+			}
+			main {
+				padding: 20px;
+			}
+			.club-card {
+				border: 1px solid #ddd;
+				padding: 15px;
+				margin: 10px;
+				display: inline-block;
+				width: 300px;
+			}
+			.club-card img {
+				width: 100%;
+			}
+			.club-card h2 {
+				margin: 0;
+				font-size: 18px;
+			}
+			button {
+				background-color: #333;
+				color: white;
+				padding: 10px;
+				border: none;
+				cursor: pointer;
+			}
+			button:disabled {
+				background-color: #aaa;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<!-- Navbar -->
+			<header>
+				<h1 v-text="sitename"></h1>
+				<button @click="showCheckout">
+					<span class="fas fa-cart-plus"></span> Cart ({{
+					cartItemCount }})
+				</button>
+			</header>
 
-        <!-- Display Clubs -->
-        <main>
-            <div v-for="club in clubs" :key="club.id" class="club-card">
-                <img :src="club.image" alt="Club Image">
-                <h2 v-text="club.subject"></h2>
-                <p>Location: {{ club.location }}</p>
-                <p>Fee: {{ club.fee }} AED per/hour</p>
-            </div>
-        </main>
-    </div>
+			<!-- Display Clubs -->
+			<main v-if="showClubs">
+				<div v-for="club in clubs" :key="club.id" class="club-card">
+					<img :src="club.image" alt="Club Image" />
+					<h2 v-text="club.subject"></h2>
+					<p>Location: {{ club.location }}</p>
+					<p>Fee: {{ club.fee }} AED per/hour</p>
+					<button
+						@click="addToCart(club)"
+						:disabled="club.availableInventory <= 0"
+					>
+						Add to Cart
+					</button>
+				</div>
+			</main>
 
-    <script type="text/javascript">
-        let webstore = new Vue({
-            el: '#app',
-            data: {
-                sitename: 'After School Club Registration',
-                clubs: [
-                    { id: 1, subject: 'Math', location: 'School A', fee: 20, image: 'images/math.jpg' },
-                    { id: 2, subject: 'Science', location: 'School B', fee: 25, image: 'images/science.jpg' },
-                    { id: 3, subject: 'Cricket', location: 'Park A', fee: 15, image: 'images/cricket.jpg' },
-                    { id: 4, subject: 'Football', location: 'Park B', fee: 30, image: 'images/football.jpg' },
-                    { id: 5, subject: 'Swimming', location: 'Pool A', fee: 35, image: 'images/swimming.jpg' }
-                ]
-            }
-        });
-    </script>
-</body>
+			<!-- Checkout Page -->
+			<main v-else>
+				<h2>Checkout</h2>
+				<p>Number of Clubs Enrolled = {{ cartItemCount }}</p>
+				<button @click="submitForm">Place Order</button>
+			</main>
+		</div>
+
+		<script type="text/javascript">
+			let webstore = new Vue({
+				el: "#app",
+				data: {
+					sitename: "After School Club Registration",
+					clubs: [
+						{
+							id: 1,
+							subject: "Math",
+							location: "School A",
+							fee: 20,
+							image: "images/math.jpg",
+							availableInventory: 5,
+						},
+						{
+							id: 2,
+							subject: "Science",
+							location: "School B",
+							fee: 25,
+							image: "images/science.jpg",
+							availableInventory: 3,
+						},
+						{
+							id: 3,
+							subject: "Cricket",
+							location: "Park A",
+							fee: 15,
+							image: "images/cricket.jpg",
+							availableInventory: 0,
+						},
+						{
+							id: 4,
+							subject: "Football",
+							location: "Park B",
+							fee: 30,
+							image: "images/football.jpg",
+							availableInventory: 4,
+						},
+						{
+							id: 5,
+							subject: "Swimming",
+							location: "Pool A",
+							fee: 35,
+							image: "images/swimming.jpg",
+							availableInventory: 7,
+						},
+					],
+					showClubs: true,
+					cart: [],
+				},
+				computed: {
+					cartItemCount: function () {
+						return this.cart.length;
+					},
+				},
+				methods: {
+					addToCart: function (club) {
+						if (club.availableInventory > 0) {
+							this.cart.push(club.id);
+							club.availableInventory--;
+						}
+					},
+					showCheckout: function () {
+						this.showClubs = !this.showClubs;
+					},
+					submitForm: function () {
+						alert("Order Submitted");
+					},
+				},
+			});
+		</script>
+	</body>
 </html>
