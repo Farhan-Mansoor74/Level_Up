@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue.js After School Clubs</title>
     <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+	<script src = "clubs.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
@@ -52,8 +53,11 @@
             width: 300px;
         }
         .club-card img {
-            width: 100%;
+            width: 100%; /* Ensures the image takes up the full width of the container */
+            height: 200px; /* Sets a fixed height for uniformity */
+            object-fit: cover; /* Crops the image to fill the specified height and width without distortion */
         }
+
         .club-card h2 {
             margin: 0;
             font-size: 18px;
@@ -150,13 +154,7 @@
             el: '#app',
             data: {
                 sitename: 'After School Club Registration',
-                clubs: [
-                    { id: 1, subject: 'Math', location: 'School A', fee: 20, image: 'images/math.jpg', availableInventory: 5 },
-                    { id: 2, subject: 'Science', location: 'School B', fee: 25, image: 'images/science.jpg', availableInventory: 3 },
-                    { id: 3, subject: 'Cricket', location: 'Park A', fee: 15, image: 'images/cricket.jpg', availableInventory: 0 },
-                    { id: 4, subject: 'Football', location: 'Park B', fee: 30, image: 'images/football.jpg', availableInventory: 4 },
-                    { id: 5, subject: 'Swimming', location: 'Pool A', fee: 35, image: 'images/swimming.jpg', availableInventory: 7 }
-                ],
+                clubs: clubs,
                 showClubs: false,  // Initially show the landing page
                 checkoutPage: false,
                 cart: [],
