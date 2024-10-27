@@ -1,0 +1,343 @@
+/* Styles for the app */
+body {
+	font-family: Inter;
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden; /* Prevent horizontal scroll on small screens */
+}
+
+main {
+	padding: 20px;
+}
+
+/* Adjust Landing Section for Smaller Screens */
+.landing-section {
+	padding: 2vh 5vw;
+	text-align: center;
+	margin: auto;
+	box-sizing: border-box;
+	width: 90%; /* Adjusts to reduce empty space on small screens */
+}
+
+.landing-section h2 {
+	font-size: 28px;
+}
+
+.landing-section p {
+	font-size: 16px;
+}
+/* Top navigation bar */
+.topnav {
+	overflow: hidden;
+	background-color: #e9e9e9;
+	padding: 10px 20px;
+	display: flex;
+	align-items: center;
+}
+
+/* Logo styling */
+.topnav a img {
+	width: 100px;
+	height: auto;
+}
+
+/* Navigation links */
+.topnav a {
+	display: block;
+	color: black;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-size: 17px;
+	margin-left: 10px;
+}
+
+.topnav a:hover {
+	background-color: #ddd;
+	color: black;
+}
+
+.topnav a.active {
+	background-color: #2196f3;
+	color: white;
+}
+
+/* Search container */
+.topnav .search-container {
+	flex: 1;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	border-radius: 20px;
+}
+
+.topnav .search-container form {
+	display: flex;
+	align-items: center;
+}
+
+.topnav input[type="text"] {
+	padding: 6px;
+	font-size: 17px;
+	border: none;
+	background-color: #ddd;
+	border-radius: 20px 0 0 20px;
+}
+
+.topnav .search-container button {
+	padding: 6px 10px;
+	background: #ddd;
+	font-size: 17px;
+	border: none;
+	cursor: pointer;
+	border-radius: 0 20px 20px 0;
+}
+
+.topnav .search-container button:hover {
+	background: #ccc;
+}
+
+/* Cart button styling */
+.cart-button {
+	display: flex;
+	align-items: center;
+	margin-left: 10px;
+	font-size: 17px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: black;
+	position: relative;
+}
+
+.cart-button:hover {
+	color: #2196f3;
+}
+
+.cart-button sup {
+	font-size: 12px;
+	color: white;
+	background: #f00;
+	border-radius: 50%;
+	padding: 2px 6px;
+	position: absolute;
+	top: -5px;
+	right: -5px;
+}
+
+.club-card {
+	padding: 15px;
+	width: 90vw;
+	max-width: 250px;
+}
+
+.club-card img {
+	width: 100%; /* Ensures the image takes up the full width of the container */
+	height: 200px; /* Sets a fixed height for uniformity */
+	object-fit: cover; /* Crops the image to fill the specified height and width without distortion */
+}
+
+.club-card h2 {
+	margin: 0;
+	font-size: 18px;
+}
+.addClub {
+	background-color: white;
+	color: black;
+	padding: 10px;
+	cursor: pointer;
+	font-size: 12px;
+	border: 1px solid black;
+	border-radius: 20px;
+}
+
+.addClub:hover {
+	background-color: #333;
+	color: white;
+}
+
+.addClub:disabled {
+	background-color: #aaa;
+	color: #666; /* Optional: Change text color for disabled */
+	cursor: not-allowed; /* Ensure the cursor reflects disabled status */
+}
+
+button {
+	background-color: #333;
+	color: white;
+	padding: 10px;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+button:disabled {
+	background-color: #aaa;
+}
+.view-courses-btn {
+	margin-top: 20px;
+	padding: 10px 20px;
+	font-size: 18px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	cursor: pointer;
+}
+.sort-section {
+	margin-bottom: 20px;
+	margin: 0 10rem;
+	box-sizing: border-box;
+	min-height: fit-content;
+}
+
+.all-clubs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 15px;
+	justify-content: center; /* Centers cards for smaller screens */
+	margin: auto;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+/* Checkout page layout */
+.checkout-container {
+	display: flex;
+	justify-content: space-between;
+	padding: 20px;
+	border-top: 2px solid grey;
+	margin: 0 10rem;
+	box-sizing: border-box;
+	min-height: fit-content;
+}
+
+.checkout-left,
+.checkout-right {
+	width: 48%; /* Give each side equal width */
+}
+
+.checkout-left {
+	padding-right: 20px;
+	border-right: 2px solid lightgrey; /* Grey line between the two sections */
+}
+
+.checkout-right {
+	padding-left: 20px;
+}
+
+.checkout-club {
+	border: 1px solid #ddd;
+	padding: 10px;
+	margin: 10px 0;
+}
+
+.checkout-club button {
+	background-color: red;
+	color: white;
+	margin-left: 10px;
+}
+
+.alert-user {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	background-color: white; /* Background color */
+	border-top: 4px solid #28a745; /* Increased border size */
+	color: black;
+	padding: 15px;
+	border-radius: 5px;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+	z-index: 1000;
+	font-size: 16px;
+	transition: opacity 0.5s ease;
+	display: flex; /* Use flexbox to align icon and text */
+	align-items: center; /* Center items vertically */
+}
+
+.alert-icon {
+	margin-right: 10px; /* Space between icon and text */
+	color: #28a745; /* Match the color of the border */
+	font-size: 20px; /* Adjust the icon size */
+}
+
+.place-order-btn {
+	background-color: #28a745;
+	color: white;
+	padding: 10px 20px;
+	border: none;
+	cursor: pointer;
+	margin-top: 20px;
+	width: 80%;
+	margin: 0 10rem;
+	box-sizing: border-box;
+	min-height: fit-content;
+}
+
+strong {
+	display: block;
+	margin-bottom: 5px;
+}
+
+.checkout-left input,
+select {
+	width: 80%;
+	padding: 10px;
+	margin-bottom: 15px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+
+/* @media (max-width: 768px) {
+	.landing-section h2 {
+		font-size: 24px;
+	}
+
+	.landing-section p {
+		font-size: 14px;
+	}
+}
+
+@media (max-width: 480px) {
+	.club-card {
+		width: 100%;
+	}
+
+	.view-courses-btn,
+	.place-order-btn {
+		width: 100%;
+		margin: 0;
+	}
+} */
+
+/* Responsive adjustments */
+@media screen and (max-width: 600px) {
+	.topnav {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.topnav a,
+	.topnav input[type="text"],
+	.topnav .search-container button,
+	.cart-button {
+		width: 100%;
+		text-align: left;
+		padding: 10px;
+		margin: 0;
+	}
+	.cart-button sup{
+		text-align: left;
+	}
+
+	.topnav .search-container {
+		justify-content: center;
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.topnav input[type="text"] {
+		max-width: 80%;
+		margin: 0 auto;
+		border: 1px solid #ccc;
+	}
+}

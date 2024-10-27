@@ -1,216 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue.js After School Clubs</title>
-    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
-	<script src = "clubs.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #333;
-            color: white;
-        }
-        header h1 {
-            margin: 0;
-        }
-        header input {
-            margin-right: 15px;
-            padding: 5px;
-            font-size: 16px;
-        }
-        main {
-            padding: 20px;
-        }
-        .landing-section {
-            padding: 50px;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        .landing-section h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-        .landing-section p {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        .club-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px;
-            display: inline-block;
-            width: 300px;
-        }
-        .club-card img {
-            width: 100%; /* Ensures the image takes up the full width of the container */
-            height: 200px; /* Sets a fixed height for uniformity */
-            object-fit: cover; /* Crops the image to fill the specified height and width without distortion */
-        }
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Vue.js After School Clubs</title>
+		<script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+		<script src="clubs.js"></script>
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+		/>
+		<link rel="stylesheet" href="css/styles.css" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<div id="app">
+			<!-- Navbar -->
+			<header class="topnav">
+				<!-- Logo -->
+				<a href="#">
+					<img
+						src="images/logo.png"
+						alt="Logo"
+						style="width: 100px; height: auto"
+					/>
+				</a>
 
-        .club-card h2 {
-            margin: 0;
-            font-size: 18px;
-        }
-        button {
-            background-color: #333;
-            color: white;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:disabled {
-            background-color: #aaa;
-        }
-        .view-courses-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .sort-section {
-            margin-bottom: 20px;
-        }
-        .checkout-club {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .checkout-club button {
-            background-color: red;
-            color: white;
-            margin-left: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <!-- Navbar -->
-        <header>
-            <h1 v-text="sitename"></h1>
-            <input type="text" v-model="searchQuery" placeholder="Search clubs..." @input="filterClubs">
-            <button @click="showCheckout">
-                <span class="fas fa-cart-plus"></span> Cart ({{ cartItemCount }})
-            </button>
-        </header>
+				<!-- Navigation Links -->
+				<a class="active" href="#home">Home</a>
+				<a href="#about">About</a>
+				<a href="#contact">Contact</a>
 
-        <!-- Landing Page Section -->
-        <main v-if="!showClubs && !checkoutPage">
-            <div class="landing-section">
-                <h2>Welcome to {{ sitename }}</h2>
-                <p>Explore a variety of after-school clubs that suit your interests and help you grow. From sports to academics, we have it all!</p>
-                <button class="view-courses-btn" @click="viewCourses">View All Courses</button>
-            </div>
-        </main>
+				<!-- Search Container -->
+				<div class="search-container">
+					<form @submit.prevent="searchCourses">
+						<input
+							type="text"
+							v-model="searchQuery"
+							placeholder="Search clubs..."
+							name="search"
+						/>
+						<button type="submit">
+							<i class="fas fa-search"></i>
+						</button>
+					</form>
+				</div>
 
-        <!-- Display Clubs -->
-        <main v-if="showClubs && !checkoutPage">
-            <div class="sort-section">
-                <label for="sort">Sort by:</label>
-                <select v-model="sortOption" @change="sortClubs">
-                    <option value="name">Alphabetical (A-Z)</option>
-                    <option value="reverse">Reverse Alphabetical (Z-A)</option>
-                </select>
-            </div>
-            <div v-for="club in filteredClubs" :key="club.id" class="club-card">
-                <img :src="club.image" alt="Club Image">
-                <h2 v-text="club.subject"></h2>
-                <p>Location: {{ club.location }}</p>
-                <p>Fee: {{ club.fee }} AED per/hour</p>
-                <button @click="addToCart(club)" :disabled="club.availableInventory <= 0">
-                    Add to Cart
-                </button>
-            </div>
-        </main>
+				<!-- Cart Button -->
+				<button @click="showCheckout" class="cart-button">
+					<span class="fas fa-cart-plus"></span>
+					<sup>{{ cartItemCount }}</sup>
+				</button>
+			</header>
 
-        <!-- Checkout Page -->
-        <main v-if="checkoutPage">
-            <h2>Checkout</h2>
-            <p>Number of Clubs Enrolled = {{ cartItemCount }} </p>
-            <div v-for="club in cartDetails" :key="club.id" class="checkout-club">
-                <span>{{ club.subject }} - {{ club.fee }} AED per/hour</span>
-                <button @click="removeFromCart(club)">Remove</button>
-            </div>
-            <button @click="submitForm">Place Order</button>
-        </main>
-    </div>
+			<!-- Custom Alert -->
+			<div v-if="showAlert" class="alert-user">
+				<span class="alert-icon"
+					><i class="fas fa-check-circle"></i
+				></span>
+				{{ alertMessage }}
+			</div>
 
-    <script type="text/javascript">
-        let webstore = new Vue({
-            el: '#app',
-            data: {
-                sitename: 'After School Club Registration',
-                clubs: clubs,
-                showClubs: false,  // Initially show the landing page
-                checkoutPage: false,
-                cart: [],
-                searchQuery: '',
-                sortOption: 'name',
-            },
-            computed: {
-                filteredClubs: function() {
-                    return this.clubs.filter(club =>
-                        club.subject.toLowerCase().includes(this.searchQuery.toLowerCase())
-                    );
-                },
-                cartItemCount: function () {
-                    return this.cart.length;
-                },
-                cartDetails: function () {
-                    return this.cart.map(id => this.clubs.find(club => club.id === id));
-                }
-            },
-            methods: {
-                addToCart: function (club) {
-                    if (club.availableInventory > 0) {
-                        this.cart.push(club.id);
-                        club.availableInventory--;
-                    }
-                },
-                removeFromCart: function (club) {
-                    let index = this.cart.indexOf(club.id);
-                    if (index !== -1) {
-                        this.cart.splice(index, 1);
-                        club.availableInventory++; // Restock the club when removed
-                    }
-                },
-                showCheckout: function () {
-                    this.showClubs = false;
-                    this.checkoutPage = true;
-                },
-                viewCourses: function () {
-                    this.showClubs = true;  // Switch to show the courses
-                    this.checkoutPage = false;
-                },
-                sortClubs: function () {
-                    if (this.sortOption === 'name') {
-                        this.clubs.sort((a, b) => a.subject.localeCompare(b.subject));
-                    } else if (this.sortOption === 'reverse') {
-                        this.clubs.sort((a, b) => b.subject.localeCompare(a.subject));
-                    }
-                },
-                submitForm: function () {
-                    alert('Order Submitted');
-                    this.cart = [];  // Empty the cart after order
-                    this.checkoutPage = false;
-                    this.showClubs = false;  // Go back to landing page after order
-                }
-            }
-        });
-    </script>
-</body>
+			<!-- Landing Page Section -->
+			<main v-if="!showClubs && !checkoutPage">
+				<div class="landing-section">
+					<h2>Welcome to {{ sitename }}</h2>
+					<p>
+						Explore a variety of after-school clubs that suit your
+						interests and help you grow. From sports to academics,
+						we have it all!
+					</p>
+					<button class="view-courses-btn" @click="viewCourses">
+						View All Courses
+					</button>
+				</div>
+			</main>
+
+			<!-- Display Clubs -->
+			<main v-if="showClubs && !checkoutPage">
+				<div class="sort-section">
+					<label for="sort">Sort by:</label>
+					<select v-model="sortOption" @change="sortClubs">
+						<option value="subject">Subject</option>
+						<option value="location">Location</option>
+						<option value="fee">Price</option>
+						<option value="spaces">Availability</option>
+					</select>
+					<label for="order">Order:</label>
+					<select v-model="sortOrder" @change="sortClubs">
+						<option value="asc">Ascending</option>
+						<option value="desc">Descending</option>
+					</select>
+				</div>
+				
+				<div class="all-clubs">
+					<div
+						v-for="club in filteredClubs"
+						:key="club.id"
+						class="club-card"
+					>
+						<img :src="club.image" alt="Club Image" />
+						<h2 v-text="club.subject"></h2>
+						<p>Location: {{ club.location }}</p>
+						<p>Fee: {{ club.fee }} AED per/hour</p>
+						<button
+							@click="addToCart(club)"
+							:disabled="club.availableInventory <= 0"
+							class="addClub"
+						>
+							Add to Cart
+						</button>
+					</div>
+				</div>
+			</main>
+
+			<!-- Checkout Page -->
+			<main v-if="checkoutPage">
+				<div class="checkout-container">
+					<!-- Left Side: Customer Information -->
+					<div class="checkout-left">
+						<h2>Checkout</h2>
+						<p>
+							<strong>First Name:</strong>
+							<input v-model.trim="order.firstName" />
+						</p>
+						<p>
+							<strong>Last Name:</strong>
+							<input v-model="order.lastName" />
+						</p>
+						<p>
+							<strong>Address:</strong>
+							<input v-model="order.address" />
+						</p>
+						<p>
+							<strong>City:</strong>
+							<input v-model="order.city" />
+						</p>
+						<p>
+							<strong>State:</strong>
+							<select v-model="order.state">
+								<option disabled value="">State</option>
+								<option
+									v-for="(state, key) in states"
+									:value="state"
+								>
+									{{ key }}
+								</option>
+							</select>
+						</p>
+						<p>
+							<strong>Zip/Postal Code:</strong>
+							<input v-model.number="order.zip" type="number" />
+						</p>
+					</div>
+
+					<!-- Right Side: Cart Details -->
+					<div class="checkout-right">
+						<h2>Your Cart ({{ cartItemCount }} items)</h2>
+						<div
+							v-for="club in cartDetails"
+							:key="club.id"
+							class="checkout-club"
+						>
+							<span
+								>{{ club.subject }} - {{ club.fee }} AED
+								per/hour</span
+							>
+							<button @click="removeFromCart(club)">
+								Remove
+							</button>
+						</div>
+					</div>
+				</div>
+
+				<!-- Place Order Button -->
+				<button class="place-order-btn" @click="submitForm">
+					Place Order
+				</button>
+			</main>
+		</div>
+
+		<script type="text/javascript">
+			let webstore = new Vue({
+				el: "#app",
+				data: {
+					sitename: "After School Club Registration",
+					clubs: clubs,
+					showClubs: false,
+					checkoutPage: false,
+					cart: [],
+					searchQuery: "",
+					sortOption: "subject", // Default sorting option
+					sortOrder: "asc", // Default sort order
+					alertMessage: "",
+					showAlert: false,
+					alertTimeout: null,
+					order: {
+						firstName: "",
+						lastName: "",
+						address: "",
+						city: "",
+						zip: "",
+						state: "",
+						method: "Home",
+					},
+				},
+				computed: {
+					filteredClubs: function () {
+						return this.clubs.filter((club) =>
+							club.subject
+								.toLowerCase()
+								.includes(this.searchQuery.toLowerCase())
+						);
+					},
+					cartItemCount: function () {
+						return this.cart.length;
+					},
+					cartDetails: function () {
+						return this.cart.map((id) =>
+							this.clubs.find((club) => club.id === id)
+						);
+					},
+				},
+				methods: {
+					addToCart: function (club) {
+						if (club.availableInventory > 0) {
+							this.cart.push(club.id);
+							club.availableInventory--;
+
+							// Show custom alert message
+							this.alertUser(
+								`${club.subject} has been added to the cart!`
+							);
+						} else {
+							// Show alert message for out of stock
+							this.alertUser(
+								`${club.subject} is currently out of stock!`
+							);
+						}
+					},
+					alertUser: function (message) {
+						this.alertMessage = message;
+						this.showAlert = true;
+
+						// Automatically hide the alert after 3 seconds
+						clearTimeout(this.alertTimeout);
+						this.alertTimeout = setTimeout(() => {
+							this.showAlert = false;
+						}, 3000);
+					},
+					removeFromCart: function (club) {
+						let index = this.cart.indexOf(club.id);
+						if (index !== -1) {
+							this.cart.splice(index, 1);
+							club.availableInventory++; // Restock the club when removed
+						}
+					},
+					showCheckout: function () {
+						this.showClubs = false;
+						this.checkoutPage = true;
+					},
+					viewCourses: function () {
+						this.showClubs = true; // Switch to show the courses
+						this.checkoutPage = false;
+					},
+					sortClubs: function () {
+						this.clubs.sort((a, b) => {
+							let comparison = 0;
+							if (this.sortOption === "subject") {
+								comparison = a.subject.localeCompare(b.subject);
+							} else if (this.sortOption === "location") {
+								comparison = a.location.localeCompare(
+									b.location
+								);
+							} else if (this.sortOption === "fee") {
+								comparison = a.fee - b.fee;
+							} else if (this.sortOption === "spaces") {
+								comparison =
+									a.availableInventory - b.availableInventory;
+							}
+
+							// Reverse comparison for descending order
+							return this.sortOrder === "asc"
+								? comparison
+								: -comparison;
+						});
+					},
+					submitForm: function () {
+						alert("Order Submitted");
+						this.cart = []; // Empty the cart after order
+						this.checkoutPage = false;
+						this.showClubs = false; // Go back to landing page after order
+					},
+				},
+			});
+		</script>
+	</body>
 </html>
