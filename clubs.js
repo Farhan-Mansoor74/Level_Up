@@ -1,18 +1,20 @@
 let clubs = [
     {
         id: 1,
-        subject: "Math",
+        subject: "Music",
         location: "School A",
         fee: 20,
-        image: "images/math.jpg",
+        image: "images/music.jpg",
+        rating: 3,
         availableInventory: 5,
     },
     {
         id: 2,
-        subject: "Science",
+        subject: "Journalism",
         location: "School B",
         fee: 25,
-        image: "images/science.jpg",
+        image: "images/journalism.jpg",
+        rating: 4,
         availableInventory: 3,
     },
     {
@@ -21,7 +23,8 @@ let clubs = [
         location: "Park A",
         fee: 15,
         image: "images/cricket.jpeg",
-        availableInventory: 0,
+        rating: 5,
+        availableInventory: 10,
     },
     {
         id: 4,
@@ -29,6 +32,7 @@ let clubs = [
         location: "Park B",
         fee: 30,
         image: "images/football.jpg",
+        rating: 4,
         availableInventory: 4,
     },
     {
@@ -37,6 +41,7 @@ let clubs = [
         location: "Pool A",
         fee: 35,
         image: "images/swimming.jpg",
+        rating: 4,
         availableInventory: 7,
     },
     {
@@ -45,6 +50,7 @@ let clubs = [
         location: "School C",
         fee: 40,
         image: "images/art.jpg",
+        rating: 3,
         availableInventory: 6,
     },
     {
@@ -53,6 +59,7 @@ let clubs = [
         location: "Tech Lab",
         fee: 50,
         image: "images/robotics.webp",
+        rating: 4,
         availableInventory: 5,
     },
     {
@@ -61,6 +68,7 @@ let clubs = [
         location: "School D",
         fee: 10,
         image: "images/debate.jpg",
+        rating: 4,
         availableInventory: 8,
     },
     {
@@ -69,6 +77,7 @@ let clubs = [
         location: "Kitchen A",
         fee: 45,
         image: "images/cooking.jpeg",
+        rating: 4,
         availableInventory: 3,
     },
     {
@@ -77,6 +86,7 @@ let clubs = [
         location: "Dance Studio",
         fee: 25,
         image: "images/dance.jpg",
+        rating: 5,
         availableInventory: 10,
     }
 ];

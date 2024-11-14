@@ -2,7 +2,12 @@ Functionalities remaining:
  - Change page style
  - Checkout form
  - Alerts when selecting disabled item
- - Out of stock, Buy now labels
  - Search bar (on click)
  - Change full font
  - Items in cart, style change
+
+
+ Update features:
+ - Cart should be disabled when items are 0
+ - Place order button should only be visible after field validation
+ - dont use .filter , create your own function for Search, dont use .includes

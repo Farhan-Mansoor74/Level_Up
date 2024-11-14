@@ -1,9 +1,10 @@
 /* Styles for the app */
 body {
-	font-family: Inter;
+	font-family: "Segoe UI", SegoeUI, "Helvetica Neue", Helvetica, Arial, sans-serif;
 	margin: 0;
 	padding: 0;
-	overflow-x: hidden; /* Prevent horizontal scroll on small screens */
+	overflow-x: hidden;
+	/* Prevent horizontal scroll on small screens */
 }
 
 main {
@@ -16,7 +17,9 @@ main {
 	text-align: center;
 	margin: auto;
 	box-sizing: border-box;
-	width: 90%; /* Adjusts to reduce empty space on small screens */
+	width: 90%;
+	/* Adjusts to reduce empty space on small screens */
+	height: 35%;
 }
 
 .landing-section h2 {
@@ -26,19 +29,27 @@ main {
 .landing-section p {
 	font-size: 16px;
 }
+
 /* Top navigation bar */
 .topnav {
 	overflow: hidden;
-	background-color: #e9e9e9;
+	background-color: #fff;
 	padding: 10px 20px;
 	display: flex;
 	align-items: center;
+	margin-left: 3rem;
+	margin-right: 3rem;
+	border-bottom: 1px solid grey;
+
 }
 
 /* Logo styling */
-.topnav a img {
-	width: 100px;
+#logo {
+	width: 100%;
+	/* Make it take up full width of its parent */
+	max-width: 200px;
 	height: auto;
+	/* Maintain aspect ratio */
 }
 
 /* Navigation links */
@@ -84,10 +95,8 @@ main {
 	border-radius: 20px 0 0 20px;
 }
 
-.topnav .search-container button {
-	padding: 6px 10px;
+#searchButton {
 	background: #ddd;
-	font-size: 17px;
 	border: none;
 	cursor: pointer;
 	border-radius: 0 20px 20px 0;
@@ -95,6 +104,92 @@ main {
 
 .topnav .search-container button:hover {
 	background: #ccc;
+}
+
+.mySlides {
+	display: none;
+}
+
+img {
+	vertical-align: middle;
+}
+
+/* Slideshow container with fixed dimensions */
+.slideshow-container {
+	max-width: 1000px;
+	height: 500px;
+	/* Set a fixed height */
+	position: relative;
+	margin: auto;
+	overflow: hidden;
+	/* Ensures no overflow */
+}
+
+/* Styling for the slideshow images */
+.slideshow-container img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	/* Images will cover the container without stretching */
+	vertical-align: middle;
+}
+
+/* Caption text */
+.text {
+	color: #f2f2f2;
+	font-size: 15px;
+	padding: 8px 12px;
+	position: absolute;
+	bottom: 8px;
+	width: 100%;
+	text-align: center;
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+	color: #f2f2f2;
+	font-size: 12px;
+	padding: 8px 12px;
+	position: absolute;
+	top: 0;
+}
+
+/* The dots/bullets/indicators */
+.dot {
+	height: 15px;
+	width: 15px;
+	margin: 0 2px;
+	background-color: #bbb;
+	border-radius: 50%;
+	display: inline-block;
+	transition: background-color 0.6s ease;
+}
+
+.active {
+	background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+	animation-name: fade;
+	animation-duration: 1.5s;
+}
+
+@keyframes fade {
+	from {
+		opacity: .4
+	}
+
+	to {
+		opacity: 1
+	}
+}
+
+/* On smaller screens, decrease text size */
+@media only screen and (max-width: 300px) {
+	.text {
+		font-size: 11px
+	}
 }
 
 /* Cart button styling */
@@ -126,21 +221,26 @@ main {
 }
 
 .club-card {
+	position: relative;
 	padding: 15px;
 	width: 90vw;
 	max-width: 250px;
 }
 
 .club-card img {
-	width: 100%; /* Ensures the image takes up the full width of the container */
-	height: 200px; /* Sets a fixed height for uniformity */
-	object-fit: cover; /* Crops the image to fill the specified height and width without distortion */
+	width: 100%;
+	/* Ensures the image takes up the full width of the container */
+	height: 200px;
+	/* Sets a fixed height for uniformity */
+	object-fit: cover;
+	/* Crops the image to fill the specified height and width without distortion */
 }
 
 .club-card h2 {
 	margin: 0;
 	font-size: 18px;
 }
+
 .addClub {
 	background-color: white;
 	color: black;
@@ -158,14 +258,16 @@ main {
 
 .addClub:disabled {
 	background-color: #aaa;
-	color: #666; /* Optional: Change text color for disabled */
-	cursor: not-allowed; /* Ensure the cursor reflects disabled status */
+	color: #666;
+	/* Optional: Change text color for disabled */
+	cursor: not-allowed;
+	/* Ensure the cursor reflects disabled status */
 }
 
 button {
 	background-color: #333;
 	color: white;
-	padding: 10px;
+	padding: 11px;
 	border: none;
 	cursor: pointer;
 	font-size: 16px;
@@ -174,6 +276,7 @@ button {
 button:disabled {
 	background-color: #aaa;
 }
+
 .view-courses-btn {
 	margin-top: 20px;
 	padding: 10px 20px;
@@ -183,66 +286,190 @@ button:disabled {
 	border: none;
 	cursor: pointer;
 }
+
 .sort-section {
+	display: flex;
+	align-items: center;
+	gap: 10px;
 	margin-bottom: 20px;
-	margin: 0 10rem;
+	margin: 0 3rem;
 	box-sizing: border-box;
 	min-height: fit-content;
 }
+
+.sort-section label {
+	font-weight: bold;
+	color: #333;
+}
+
+.sort-section select {
+	padding: 8px 12px;
+	font-size: 1rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #f9f9f9;
+	color: #333;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.sort-section select:hover {
+	background-color: #e9e9e9;
+}
+
+.sort-section select:focus {
+	outline: none;
+	border-color: #4CAF50;
+	/* Accent color */
+	box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
 
 .all-clubs {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 15px;
-	justify-content: center; /* Centers cards for smaller screens */
+	justify-content: center;
+	/* Centers cards for smaller screens */
 	margin: auto;
 	padding: 10px;
 	box-sizing: border-box;
 }
 
-/* Checkout page layout */
 .checkout-container {
 	display: flex;
 	justify-content: space-between;
 	padding: 20px;
-	border-top: 2px solid grey;
-	margin: 0 10rem;
-	box-sizing: border-box;
-	min-height: fit-content;
-}
-
-.checkout-left,
-.checkout-right {
-	width: 48%; /* Give each side equal width */
 }
 
 .checkout-left {
-	padding-right: 20px;
-	border-right: 2px solid lightgrey; /* Grey line between the two sections */
+	width: 63%;
+	background-color: #f2f2f2;
+	padding: 5px 20px 15px 20px;
+	border: 1px solid lightgrey;
+	border-radius: 3px;
 }
 
 .checkout-right {
-	padding-left: 20px;
+	width: 30%;
+	background-color: #f2f2f2;
+	padding: 5px 20px 15px 20px;
+	border: 1px solid lightgrey;
+	border-radius: 3px;
+}
+
+.checkout-left h2,
+.checkout-right h2 {
+	margin-bottom: 20px;
 }
 
 .checkout-club {
-	border: 1px solid #ddd;
-	padding: 10px;
-	margin: 10px 0;
+	margin-bottom: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border: 1px solid black;
+	padding: 10px 10px;
 }
 
-.checkout-club button {
-	background-color: red;
+.cart-image {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	margin-right: 10px;
+	border-radius: 5px;
+}
+
+.club-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	padding-left: 10px;
+}
+
+.club-name {
+	font-size: 16px;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.club-price {
+	font-size: 16px;
+	font-weight: normal;
+	color: #555;
+}
+
+.availability-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #ff5555;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 0.9em;
+    border-radius: 4px;
+}
+
+.remove-btn {
+	background-color: #ff4d4d;
 	color: white;
-	margin-left: 10px;
+	border: none;
+	padding: 5px 10px;
+	cursor: pointer;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.remove-btn:hover {
+	background-color: #e60000;
+}
+
+.cart-total {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 0;
+	font-size: 18px;
+	font-weight: bold;
+	border-top: 2px solid #333;
+}
+
+.cart-total p {
+	margin: 0;
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+}
+
+.cart-total .price {
+	font-weight: bold;
+	color: black;
+}
+
+.back-btn {
+	background-color: #ddd;
+	padding: 10px 20px;
+	margin-top: 20px;
+	cursor: pointer;
+}
+
+.place-order-btn {
+	margin-top: 20px;
+	padding: 10px 20px;
+	background-color: #04AA6D;
+	color: white;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
 }
 
 .alert-user {
 	position: fixed;
 	top: 20px;
-	right: 20px;
-	background-color: white; /* Background color */
-	border-top: 4px solid #28a745; /* Increased border size */
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: white;
+	border-top: 4px solid #28a745;
 	color: black;
 	padding: 15px;
 	border-radius: 5px;
@@ -250,27 +477,14 @@ button:disabled {
 	z-index: 1000;
 	font-size: 16px;
 	transition: opacity 0.5s ease;
-	display: flex; /* Use flexbox to align icon and text */
-	align-items: center; /* Center items vertically */
+	display: flex;
+	align-items: center;
 }
 
 .alert-icon {
-	margin-right: 10px; /* Space between icon and text */
-	color: #28a745; /* Match the color of the border */
-	font-size: 20px; /* Adjust the icon size */
-}
-
-.place-order-btn {
-	background-color: #28a745;
-	color: white;
-	padding: 10px 20px;
-	border: none;
-	cursor: pointer;
-	margin-top: 20px;
-	width: 80%;
-	margin: 0 10rem;
-	box-sizing: border-box;
-	min-height: fit-content;
+	margin-right: 10px;
+	color: #28a745;
+	font-size: 20px;
 }
 
 strong {
@@ -278,8 +492,7 @@ strong {
 	margin-bottom: 5px;
 }
 
-.checkout-left input,
-select {
+.checkout-left input {
 	width: 80%;
 	padding: 10px;
 	margin-bottom: 15px;
@@ -325,7 +538,8 @@ select {
 		padding: 10px;
 		margin: 0;
 	}
-	.cart-button sup{
+
+	.cart-button sup {
 		text-align: left;
 	}
 
