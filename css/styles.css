@@ -24,7 +24,6 @@ main{
     align-items: center;
     padding: 2vh 5vw;
     height: 75vh;
-	background-color: #c3e1f5;
     color: black;
     font-family: "Courier New", Courier, monospace;
     overflow: hidden; /* Ensures no unwanted scrollbars appear */
@@ -34,7 +33,7 @@ main{
 /* Text Content */
 .text-content {
     flex: 1; /* Takes up the left side */
-    max-width: 50%; /* Limits the width of the text section */
+    max-width: 100%; /* Limits the width of the text section */
     text-align: left;
 }
 
@@ -49,7 +48,7 @@ main{
 /* Video Wrapper */
 .video-wrapper {
     flex: 1; /* Takes up the right side */
-    max-width: 50%; /* Limits the width of the video section */
+    max-width: 100%; /* Limits the width of the video section */
     display: flex;
     justify-content: center;
     align-items: center;
