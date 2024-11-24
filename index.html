@@ -31,7 +31,8 @@
 			</div>
 
 			<!-- Cart Button -->
-			<button @click="showCheckout" class="cart-button">
+			<button @click="showCheckout" class="cart-button" :class="{ 'on-checkout': checkoutPage }"
+				:data-tooltip="checkoutPage ? 'Back to Courses' : 'View Cart'">
 				<span class="fas fa-cart-plus"></span>
 				<sup>{{ cartItemCount }}</sup>
 			</button>
@@ -193,6 +194,12 @@
 			<button class="back-btn" @click="viewCourses">
 				Back to Courses
 			</button>
+
+			<!-- Loading Overlay -->
+			<div v-if="isLoading" class="loading-overlay">
+				<div class="spinner"></div>
+				<div class="loading-text">Processing your order...</div>
+			</div>
 		</main>
 
 		<main v-if="showReceipt" class="receipt-container">
@@ -278,7 +285,8 @@
 					name: false,
 					phone: false
 				},
-				debouncedSearch: null
+				debouncedSearch: null,
+				isLoading: false
 			},
 			mounted() {
 				this.fetchAllClubs();
@@ -347,6 +355,7 @@
 					this.checkoutPage = false;
 				},
 				addOrder: async function () {
+					this.isLoading = true; // Show loading spinner
 					try {
 						const orderData = {
 							name: this.order.name,
@@ -360,7 +369,6 @@
 						};
 
 						console.log('Sending order data:', orderData);
-
 						const response = await fetch('https://lu-backend-6ln8.onrender.com/orders', {
 							method: 'POST',
 							headers: {
@@ -402,14 +410,15 @@
 						this.showReceipt = true;
 
 						// Refetch clubs to ensure updated availability
-						this.fetchAllClubs();
+						await this.fetchAllClubs();
 
 					} catch (error) {
 						console.error(error);
 						this.alertUser('Error placing the order. Please try again later.', 'error');
+					} finally {
+						this.isLoading = false; // Hide loading spinner
 					}
 				},
-
 				updateAvailability: async function (clubId, newAvailability) {
 					try {
 						console.log('Updating availability:', {
@@ -501,12 +510,18 @@
 						}
 					}
 				},
-				showCheckout: function () {
-					if (this.cart.length == 0) {
-						alert(
-							"Cart is empty! Please select a course to proceed."
-						);
+				showCheckout() {
+					if (this.cart.length === 0) {
+						alert("Cart is empty! Please select a course to proceed.");
+						return;
+					}
+
+					// If already on checkout page, go back to courses
+					if (this.checkoutPage) {
+						this.showClubs = true;
+						this.checkoutPage = false;
 					} else {
+						// Go to checkout page
 						this.showClubs = false;
 						this.checkoutPage = true;
 					}

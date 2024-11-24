@@ -4,6 +4,7 @@ body {
 	margin: 0;
 	padding: 0;
 	overflow-x: hidden;
+	background-color: #f5f5f5;
 	/* Prevent horizontal scroll on small screens */
 }
 
@@ -63,11 +64,8 @@ main {
 
 .background-video {
 	width: 100%;
-	/* Ensures the video fits within the video wrapper */
 	height: auto;
-	/* Maintains aspect ratio */
 	border-radius: 10px;
-	/* Optional: adds rounded corners to the video */
 }
 
 
@@ -233,8 +231,7 @@ img {
 	}
 }
 
-/* Cart button styling */
-.cart-button {
+/* .cart-button {
 	display: flex;
 	align-items: center;
 	margin-left: 10px;
@@ -259,6 +256,69 @@ img {
 	position: absolute;
 	top: -5px;
 	right: -5px;
+} */
+
+.cart-button {
+	position: relative;
+	padding: 0.5rem 1rem;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.cart-button .fas {
+	font-size: 1.5rem;
+	color: #4CAF50;
+	transition: color 0.3s ease;
+}
+
+.cart-button:hover .fas {
+	color: #45a049;
+}
+
+.cart-button sup {
+	position: absolute;
+	top: 0;
+	right: 0;
+	background: #ef4444;
+	color: white;
+	padding: 0.2rem 0.3rem;
+	border-radius: 50%;
+	font-size: 0.75rem;
+	min-width: 1.2rem;
+	height: 1.2rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Add a visual indicator when on checkout page */
+.cart-button.on-checkout .fas {
+	color: rgb(5, 71, 37);
+}
+
+/*Tooltip to indicate toggle functionality */
+.cart-button::after {
+	content: attr(data-tooltip);
+	position: absolute;
+	bottom: -2rem;
+	left: 50%;
+	transform: translateX(-50%);
+	background: #333;
+	color: white;
+	padding: 0.4rem 0.8rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.3s ease;
+}
+
+.cart-button:hover::after {
+	opacity: 1;
+	visibility: visible;
 }
 
 .club-card {
@@ -421,8 +481,8 @@ button:disabled {
 	flex: 1;
 	background: white;
 	border-radius: 12px;
+	border-color: black;
 	padding: 2.5rem;
-	/* box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); */
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -606,6 +666,67 @@ label {
 	margin-left: 2.5rem;
 }
 
+/* Loading Overlay */
+.loading-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(255, 255, 255, 0.9);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+	flex-direction: column;
+}
+
+/* Loading Spinner */
+.spinner {
+	width: 50px;
+	height: 50px;
+	border: 5px solid #f3f3f3;
+	border-top: 5px solid #4CAF50;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+}
+
+.loading-text {
+	margin-top: 1rem;
+	color: #4CAF50;
+	font-size: 1.1rem;
+	font-weight: 500;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+/* Pulse animation for the loading text */
+.loading-text {
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0% {
+		opacity: 0.6;
+	}
+
+	50% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0.6;
+	}
+}
+
 #alert-container {
 	position: fixed;
 	top: 20px;
@@ -718,8 +839,9 @@ label {
 }
 
 .receipt-items th {
-	background-color: #f8f9fa;
+	background-color: rgb(5, 71, 37);
 	font-weight: 600;
+	color: white;
 }
 
 .total-label {

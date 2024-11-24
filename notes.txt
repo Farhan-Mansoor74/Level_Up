@@ -1,6 +1,0 @@
-Functionalities remaining:
- - Change page style
- - Checkout form
- - Alerts when selecting disabled item
- - Change full font
- - Items in cart, style change
