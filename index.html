@@ -23,7 +23,7 @@
 			<div class="search-container">
 				<form @submit.prevent="searchClubs">
 					<input type="text" v-model="searchQuery" placeholder="Search clubs..." name="search"
-						style="padding: 10px 20px" @input="searchClubs" />
+						style="padding: 10px 20px" @input="debouncedSearch" />
 					<button type="submit" id="searchButton">
 						<i class="fas fa-search"></i>
 					</button>
@@ -38,13 +38,15 @@
 		</header>
 
 		<!-- Custom Alert -->
-		<div v-if="showAlert" class="alert-user">
-			<span class="alert-icon"><i class="fas fa-check-circle"></i></span>
-			{{ alertMessage }}
+		<div id="alert-container">
+			<div v-for="alert in alerts" :key="alert.id" :class="['alert', `alert-${alert.type}`]">
+				<i :class="alert.icon"></i>
+				{{ alert.message }}
+			</div>
 		</div>
 
 		<!-- Landing Page Section -->
-		<main class="landing" v-if="!showClubs && !checkoutPage">
+		<main class="landing" v-if="!showClubs && !checkoutPage &&!showReceipt">
 			<div class="landing-section">
 				<div class="text-content">
 					<h2>Welcome to {{ sitename }}</h2>
@@ -130,8 +132,7 @@
 						<span v-for="n in club.rating"> ★ </span>
 						<span v-for="n in 5 - club.rating"> ☆ </span>
 					</div>
-					<button @click="addToCart(club)" :disabled="club.availableInventory <= 0 || cart.includes(club.id)"
-						class="addClub">
+					<button @click="addToCart(club)" :disabled="club.availableInventory <= 0" class="addClub">
 						Add to Cart
 					</button>
 				</div>
@@ -144,14 +145,22 @@
 				<!-- Left Side: Customer Information -->
 				<div class="checkout-left">
 					<h2>Checkout</h2>
-					<p>
-						<strong>Name:</strong>
-						<input v-model.trim="order.name" placeholder="Full Name" />
-					</p>
-					<p>
-						<strong>Phone:</strong>
-						<input v-model="order.phone" type="tel" placeholder="Phone Number" />
-					</p>
+					<div class="form-group">
+						<label for="name"><strong>Name:</strong></label>
+						<input id="name" v-model.trim="order.name" @input="validateName"
+							:class="{'invalid': formErrors.name}" placeholder="Full Name" />
+						<span class="error-message" v-if="formErrors.name">
+							Please enter a valid name (letters only)
+						</span>
+					</div>
+					<div class="form-group">
+						<label for="phone"><strong>Phone:</strong></label>
+						<input id="phone" v-model.trim="order.phone" @input="validatePhone"
+							:class="{'invalid': formErrors.phone}" type="tel" placeholder="Phone Number" />
+						<span class="error-message" v-if="formErrors.phone">
+							Please enter a valid phone number (numbers only)
+						</span>
+					</div>
 				</div>
 				<!-- Right Side: Cart Details -->
 				<div class="checkout-right">
@@ -174,16 +183,67 @@
 					</div>
 
 					<!-- Place Order Button -->
-					<button class="place-order-btn" v-if="isOrderValid" @click="submitForm">
+					<button class="place-order-btn" v-if="isOrderValid" @click="addOrder">
 						Place Order
 					</button>
 				</div>
 			</div>
 
 			<!-- Back to Courses Button -->
-			<button class="back-btn" @click="viewCourses" style="margin-left: 2rem">
+			<button class="back-btn" @click="viewCourses">
 				Back to Courses
 			</button>
+		</main>
+
+		<main v-if="showReceipt" class="receipt-container">
+			<div class="receipt">
+				<div class="receipt-header">
+					<img src="images/LevelUplogo.png" alt="Logo" class="receipt-logo" />
+					<h2>Order Confirmation</h2>
+					<p class="receipt-date">{{ getCurrentDate() }}</p>
+				</div>
+
+				<div class="receipt-customer">
+					<h3>Customer Details</h3>
+					<p><strong>Name:</strong> {{ orderDetails.name }}</p>
+					<p><strong>Phone:</strong> {{ orderDetails.phone }}</p>
+				</div>
+
+				<div class="receipt-items">
+					<h3>Order Details</h3>
+					<table>
+						<thead>
+							<tr>
+								<th>Club</th>
+								<th>Location</th>
+								<th>Price (AED)</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="club in orderDetails.clubs" :key="club.id">
+								<td>{{ club.subject }}</td>
+								<td>{{ club.location }}</td>
+								<td>{{ club.fee }} AED</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<td colspan="2" class="total-label">Total</td>
+								<td class="total-amount">{{ orderDetails.total }} AED</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+
+				<div class="receipt-footer">
+					<p>Thank you for choosing Level Up!</p>
+					<p>Your clubs registration is confirmed.</p>
+				</div>
+
+				<button @click="goToHome" class="home-button">
+					<i class="fas fa-home"></i> Return to Home
+				</button>
+			</div>
 		</main>
 	</div>
 
@@ -195,19 +255,30 @@
 				clubs: [],
 				showClubs: false,
 				checkoutPage: false,
+				showReceipt: false,
+				orderDetails: {
+					name: '',
+					phone: '',
+					clubs: [],
+					total: 0,
+					date: ''
+				},
 				cart: [],
 				searchQuery: "",
 				sortOption: "subject", // Default sorting option
 				sortOrder: "asc", // Default sort order
-				alertMessage: "",
-				showAlert: false,
-				alertTimeout: null,
+				alerts: [],
 				order: {
 					name: "",
 					phone: "",
 				},
 				slideIndex: 0,
-				searchResults: [], // Array to store search results
+				searchResults: [],// Array to store search results
+				formErrors: {
+					name: false,
+					phone: false
+				},
+				debouncedSearch: null
 			},
 			mounted() {
 				this.fetchAllClubs();
@@ -215,14 +286,16 @@
 					this.showSlides();
 					this.searchResults = this.clubs; // Populate searchResults with all clubs initially
 				});
+
+				this.debouncedSearch = this.debounce(this.searchClubs, 300);
 			},
 			computed: {
 				cartItemCount: function () {
 					return this.cart.length;
 				},
 				cartDetails: function () {
-					return this.cart.map((id) =>
-						this.clubs.find((club) => club.id === id)
+					return this.cart.map((cartId) =>
+						this.clubs.find((club) => club._id === cartId || club.id === cartId)
 					);
 				},
 				cartTotal() {
@@ -231,15 +304,13 @@
 						0
 					);
 				},
-				isOrderValid() {
-					return (
-						this.order.name &&
-						this.order.phone
-					);
+				isOrderValid: function () {
+					return this.isValidName(this.order.name) && this.isValidPhone(this.order.phone);
 				},
 			},
 			methods: {
 				fetchAllClubs: async function () {
+					console.log('FETCHING CLUBS');
 					try {
 						const response = await fetch('https://lu-backend-6ln8.onrender.com/clubs', {
 							method: 'GET',
@@ -251,45 +322,44 @@
 							throw new Error('Failed to fetch clubs');
 						}
 						const data = await response.json();
+						console.log('Fetched Clubs:', data); // Add this line
 						this.clubs = data;
-						this.searchResults = data; // Update searchResults to reflect the fetched data
+						this.searchResults = data;
 					} catch (error) {
 						console.error(error);
 						alert('Error fetching clubs. Please try again later.');
 					}
 				},
-
-				updateAvailability: async function (clubId, newAvailability) {
-					try {
-						const response = await fetch(`https://lu-backend-6ln8.onrender.com/clubs/${clubId}`, {
-							method: 'PATCH',
-							headers: {
-								'Content-Type': 'application/json',
-							},
-							body: JSON.stringify({ availableInventory: newAvailability }),
-						});
-						if (!response.ok) {
-							throw new Error('Failed to update availability');
-						}
-						console.log(`Club ${clubId} availability updated successfully.`);
-					} catch (error) {
-						console.error(error);
-						alert('Error updating club availability. Please try again later.');
-					}
+				getCurrentDate: function () {
+					const date = new Date();
+					return date.toLocaleDateString('en-US', {
+						year: 'numeric',
+						month: 'long',
+						day: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit'
+					});
 				},
 
+				goToHome: function () {
+					this.showReceipt = false;
+					this.showClubs = false;
+					this.checkoutPage = false;
+				},
 				addOrder: async function () {
 					try {
 						const orderData = {
 							name: this.order.name,
 							phone: this.order.phone,
 							cart: this.cartDetails.map(club => ({
-								id: club.id,
+								id: club._id || club.id,
 								subject: club.subject,
 								fee: club.fee,
 							})),
 							total: this.cartTotal,
 						};
+
+						console.log('Sending order data:', orderData);
 
 						const response = await fetch('https://lu-backend-6ln8.onrender.com/orders', {
 							method: 'POST',
@@ -303,54 +373,132 @@
 							throw new Error('Failed to place the order');
 						}
 
-						const data = await response.json();
-						alert('Order placed successfully!');
-						console.log('Order Response:', data);
+						const responseData = await response.json();
 
-						// Reset cart and form after successful order placement
+						// Update availability for each club in the cart
+						for (let club of this.cartDetails) {
+							await this.updateAvailability(club._id || club.id, club.availableInventory);
+						}
+
+						// Prepare receipt data
+						this.orderDetails = {
+							name: this.order.name,
+							phone: this.order.phone,
+							clubs: this.cartDetails,
+							total: this.cartTotal,
+							date: this.getCurrentDate()
+						};
+
+						// Show success message
+						this.alertUser('Order placed successfully!', 'success');
+
+						// Reset cart and form
 						this.cart = [];
 						this.order.name = '';
 						this.order.phone = '';
-						this.checkoutPage = false;
-						this.showClubs = false;
 
-						// Refetch clubs to update availability
+						// Show receipt instead of going to home
+						this.checkoutPage = false;
+						this.showReceipt = true;
+
+						// Refetch clubs to ensure updated availability
 						this.fetchAllClubs();
+
 					} catch (error) {
 						console.error(error);
-						alert('Error placing the order. Please try again later.');
+						this.alertUser('Error placing the order. Please try again later.', 'error');
+					}
+				},
+
+				updateAvailability: async function (clubId, newAvailability) {
+					try {
+						console.log('Updating availability:', {
+							clubId,
+							newAvailability
+						});
+
+						const response = await fetch(`https://lu-backend-6ln8.onrender.com/updateClub/${clubId}`, {
+							method: 'PUT',
+							headers: {
+								'Content-Type': 'application/json',
+							},
+							body: JSON.stringify({ availableInventory: newAvailability }),
+						});
+
+						console.log('Update response:', {
+							status: response.status,
+							ok: response.ok
+						});
+
+						if (!response.ok) {
+							const errorText = await response.text();
+							console.error('Update error:', errorText);
+							throw new Error('Failed to update availability');
+						}
+
+						const responseData = await response.json();
+						console.log('Update response data:', responseData);
+					} catch (error) {
+						console.error('Complete update error:', error);
+						alert('Error updating club availability. Please try again later.');
 					}
 				},
 
 				addToCart: function (club) {
-					if (
-						club.availableInventory > 0 &&
-						!this.cart.includes(club.id)
-					) {
-						this.cart.push(club.id);
-						club.availableInventory--;
-						this.alertUser(
-							`${club.subject} has been added to the cart!`
-						);
+					console.log('Adding to cart:', club._id || club.id, club.subject);
+					console.log('Current cart:', this.cart);
+
+					const clubId = club._id || club.id;
+
+					if (this.cart.includes(clubId)) {
+						console.log('Club already in cart:', clubId);
+						this.alertUser(`${club.subject} is already in the cart!`, 'warning');
+						return;
+					}
+
+					if (club.availableInventory > 0) {
+						this.cart.push(clubId);
+
+						const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
+						if (clubIndex !== -1) {
+							this.clubs[clubIndex].availableInventory -= 1;
+						}
+
+						this.alertUser(`${club.subject} has been added to the cart!`, 'success');
 					} else {
-						this.alertUser(
-							`${club.subject} is already in the cart or out of stock!`
-						);
+						this.alertUser(`${club.subject} is out of stock!`, 'error');
 					}
 				},
-				alertUser: function (message) {
-					this.alertMessage = message;
-					this.showAlert = true;
-					clearTimeout(this.alertTimeout);
-					this.alertTimeout = setTimeout(() => {
-						this.showAlert = false;
+				alertUser: function (message, type = 'success') {
+					const alert = {
+						message,
+						type,
+						id: Date.now(),
+						icon: type === 'success' ? 'fas fa-check-circle' :
+							type === 'warning' ? 'fas fa-exclamation-triangle' :
+								'fas fa-times-circle'
+					};
+
+					this.alerts.push(alert);
+
+					setTimeout(() => {
+						const index = this.alerts.findIndex(a => a.id === alert.id);
+						if (index !== -1) {
+							this.alerts.splice(index, 1);
+						}
 					}, 3000);
 				},
 				removeFromCart: function (club) {
-					let index = this.cart.indexOf(club.id);
+					const clubId = club._id || club.id;
+					let index = this.cart.indexOf(clubId);
 					if (index !== -1) {
 						this.cart.splice(index, 1);
-						club.availableInventory++;
+
+						// Find the club in the original clubs array to restore inventory
+						const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
+						if (clubIndex !== -1) {
+							this.clubs[clubIndex].availableInventory++;
+						}
 					}
 				},
 				showCheckout: function () {
@@ -391,28 +539,81 @@
 							: -comparison;
 					});
 				},
-				submitForm: function () {
-					alert("Order Submitted");
-					this.cart = [];
-					this.checkoutPage = false;
-					this.showClubs = false;
+				isValidName: function (name) {
+					// Checks if name contains only letters and spaces
+					// Also ensures minimum 2 characters and allows for multiple names
+					const nameRegex = /^[A-Za-z\s]{2,}$/;
+					return nameRegex.test(name.trim());
 				},
-				searchClubs: function () {
-					const query = this.searchQuery.toLowerCase();
+				isValidPhone: function (phone) {
+					// Checks if phone contains only numbers
+					// Allows for 7-15 digits to accommodate different phone number formats
+					const phoneRegex = /^[0-9]{7,15}$/;
+					return phoneRegex.test(phone.trim());
+				},
+				validateName: function () {
+					this.formErrors.name = !this.isValidName(this.order.name) && this.order.name.length > 0;
+				},
+				validatePhone: function () {
+					this.formErrors.phone = !this.isValidPhone(this.order.phone) && this.order.phone.length > 0;
+				},
+
+				debounce: function (func, wait) {
+					let timeout;
+					return function executedFunction(...args) {
+						const later = () => {
+							clearTimeout(timeout);
+							func(...args);
+						};
+						clearTimeout(timeout);
+						timeout = setTimeout(later, wait);
+					};
+				},
+
+				searchClubs: async function () {
+					const query = this.searchQuery.trim();
+
+					// If search query is empty, fetch all clubs
 					if (query === "") {
-						this.searchResults = this.clubs; // If search query is empty, show all clubs
-					} else {
-						this.searchResults = [];
-						for (let club of this.clubs) {
-							if (
-								this.isSubstring(
-									query,
-									club.subject.toLowerCase()
-								)
-							) {
-								this.searchResults.push(club);
+						await this.fetchAllClubs();
+						return;
+					}
+
+					try {
+						// Make API call to backend search endpoint
+						const response = await fetch(`https://lu-backend-6ln8.onrender.com/clubs/search?query=${encodeURIComponent(query)}`, {
+							method: 'GET',
+							headers: {
+								'Content-Type': 'application/json',
 							}
+						});
+
+						// Parse the response
+						const data = await response.json();
+
+						if (!response.ok) {
+							// Handle 404 and other errors
+							if (response.status === 404) {
+								this.searchResults = [];
+								this.alertUser('No clubs found matching your search', 'warning');
+							} else {
+								throw new Error(data.message || 'Error performing search');
+							}
+							return;
 						}
+
+						// Update the search results
+						this.searchResults = data;
+
+						// If results were found, show success message
+						if (data.length > 0) {
+							this.alertUser(`Found ${data.length} club${data.length === 1 ? '' : 's'} matching your search`, 'success');
+						}
+
+					} catch (error) {
+						console.error('Search error:', error);
+						this.alertUser('Error performing search. Please try again.', 'error');
+						this.searchResults = [];
 					}
 				},
 				isSubstring: function (query, subject) {
