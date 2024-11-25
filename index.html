@@ -16,7 +16,8 @@
 		<header class="topnav">
 			<!-- Logo -->
 			<a href="#">
-				<img src="images/LevelUplogo.png" id="logo" alt="Logo" @click="toLandingPage" />
+				<img src="https://lu-backend-6ln8.onrender.com/images/LevelUplogo.png" id="logo" alt="Logo"
+					@click="toLandingPage" />
 			</a>
 
 			<!-- Search Container -->
@@ -64,7 +65,7 @@
 				<!-- Background Video Section -->
 				<div class="video-wrapper">
 					<video autoplay muted loop class="background-video">
-						<source src="images/bg_vid.mp4" type="video/mp4" />
+						<source src="https://lu-backend-6ln8.onrender.com/images/bg_vid.mp4" type="video/mp4" />
 						Your browser does not support the video tag.
 					</video>
 				</div>
@@ -73,19 +74,19 @@
 			<div class="slideshow-container">
 				<div class="mySlides fade">
 					<div class="numbertext">1 / 3</div>
-					<img src="images/football.jpg" style="width: 100%" />
+					<img src="https://lu-backend-6ln8.onrender.com/images/football.jpg" style="width: 100%" />
 					<div class="text">Football</div>
 				</div>
 
 				<div class="mySlides fade">
 					<div class="numbertext">2 / 3</div>
-					<img src="images/debate.jpg" style="width: 100%" />
+					<img src="https://lu-backend-6ln8.onrender.com/images/debate.jpg" style="width: 100%" />
 					<div class="text">Debate</div>
 				</div>
 
 				<div class="mySlides fade">
 					<div class="numbertext">3 / 3</div>
-					<img src="images/cricket.jpeg" style="width: 100%" />
+					<img src="https://lu-backend-6ln8.onrender.com/images/cricket.jpeg" style="width: 100%" />
 					<div class="text">Cricket</div>
 				</div>
 			</div>
@@ -167,7 +168,7 @@
 				<div class="checkout-right">
 					<h2>Your Cart ({{ cartItemCount }} items)</h2>
 					<div v-for="club in cartDetails" :key="club.id" class="checkout-club">
-						<img :src="club.image" alt="Club Image" class="cart-image" />
+						<img :src="getImagePath(club.image)" alt="Club Image" class="cart-image" />
 						<div class="club-info">
 							<span class="club-name">{{ club.subject }}</span>
 							<span class="club-price">{{ club.fee }} AED per hour</span>
@@ -205,7 +206,8 @@
 		<main v-if="showReceipt" class="receipt-container">
 			<div class="receipt">
 				<div class="receipt-header">
-					<img src="images/LevelUplogo.png" alt="Logo" class="receipt-logo" />
+					<img src="https://lu-backend-6ln8.onrender.com/images/LevelUplogo.png" alt="Logo"
+						class="receipt-logo" />
 					<h2>Order Confirmation</h2>
 					<p class="receipt-date">{{ getCurrentDate() }}</p>
 				</div>
@@ -270,7 +272,7 @@
 					total: 0,
 					date: ''
 				},
-				cart: [],
+				cart: {},
 				searchQuery: "",
 				sortOption: "subject", // Default sorting option
 				sortOrder: "asc", // Default sort order
@@ -299,16 +301,25 @@
 			},
 			computed: {
 				cartItemCount: function () {
-					return this.cart.length;
+					return Object.values(this.cart).reduce((total, quantity) => total + quantity, 0);
 				},
 				cartDetails: function () {
-					return this.cart.map((cartId) =>
-						this.clubs.find((club) => club._id === cartId || club.id === cartId)
-					);
+					const details = [];
+					for (const [clubId, quantity] of Object.entries(this.cart)) {
+						const club = this.clubs.find((c) => c._id === clubId || c.id === clubId);
+						if (club) {
+							details.push({
+								...club,
+								quantity: quantity,
+								subtotal: club.fee * quantity
+							});
+						}
+					}
+					return details;
 				},
 				cartTotal() {
 					return this.cartDetails.reduce(
-						(total, club) => total + club.fee,
+						(total, item) => total + (item.fee * item.quantity),
 						0
 					);
 				},
@@ -348,14 +359,19 @@
 						minute: '2-digit'
 					});
 				},
-
+				getImagePath(filename) {
+					// Update the base URL for production
+					const baseURL = "https://lu-backend-6ln8.onrender.com/images/";
+					return `${baseURL}${filename}`;
+				},
 				goToHome: function () {
 					this.showReceipt = false;
 					this.showClubs = false;
 					this.checkoutPage = false;
 				},
+				// You'll also need to modify the addOrder method to call updateAvailability correctly:
 				addOrder: async function () {
-					this.isLoading = true; // Show loading spinner
+					this.isLoading = true;
 					try {
 						const orderData = {
 							name: this.order.name,
@@ -364,6 +380,7 @@
 								id: club._id || club.id,
 								subject: club.subject,
 								fee: club.fee,
+								quantity: club.quantity,
 							})),
 							total: this.cartTotal,
 						};
@@ -385,45 +402,54 @@
 
 						// Update availability for each club in the cart
 						for (let club of this.cartDetails) {
-							await this.updateAvailability(club._id || club.id, club.availableInventory);
+							// Now passing quantity instead of new availability
+							const success = await this.updateAvailability(
+								club._id || club.id,
+								club.quantity
+							);
+
+							if (!success) {
+								throw new Error('Failed to update club availability');
+							}
 						}
 
-						// Prepare receipt data
+						// Prepare receipt data with quantities
 						this.orderDetails = {
 							name: this.order.name,
 							phone: this.order.phone,
-							clubs: this.cartDetails,
+							clubs: this.cartDetails.map(club => ({
+								...club,
+								spaces: club.quantity
+							})),
 							total: this.cartTotal,
 							date: this.getCurrentDate()
 						};
 
-						// Show success message
 						this.alertUser('Order placed successfully!', 'success');
 
 						// Reset cart and form
-						this.cart = [];
+						this.cart = {};
 						this.order.name = '';
 						this.order.phone = '';
 
-						// Show receipt instead of going to home
 						this.checkoutPage = false;
 						this.showReceipt = true;
 
-						// Refetch clubs to ensure updated availability
 						await this.fetchAllClubs();
 
 					} catch (error) {
 						console.error(error);
 						this.alertUser('Error placing the order. Please try again later.', 'error');
 					} finally {
-						this.isLoading = false; // Hide loading spinner
+						this.isLoading = false;
 					}
 				},
-				updateAvailability: async function (clubId, newAvailability) {
+
+				updateAvailability: async function (clubId, quantity) {
 					try {
 						console.log('Updating availability:', {
 							clubId,
-							newAvailability
+							quantity
 						});
 
 						const response = await fetch(`https://lu-backend-6ln8.onrender.com/updateClub/${clubId}`, {
@@ -431,7 +457,7 @@
 							headers: {
 								'Content-Type': 'application/json',
 							},
-							body: JSON.stringify({ availableInventory: newAvailability }),
+							body: JSON.stringify({ quantity }),
 						});
 
 						console.log('Update response:', {
@@ -440,44 +466,63 @@
 						});
 
 						if (!response.ok) {
-							const errorText = await response.text();
-							console.error('Update error:', errorText);
-							throw new Error('Failed to update availability');
+							const errorData = await response.json();
+							console.error('Update error:', errorData);
+
+							// Handle specific error cases
+							if (response.status === 400) {
+								this.alertUser(`Not enough spaces available. Only ${errorData.availableInventory} spaces left.`, 'error');
+							} else if (response.status === 404) {
+								this.alertUser('Club not found.', 'error');
+							} else {
+								throw new Error('Failed to update availability');
+							}
+							return false;
 						}
 
 						const responseData = await response.json();
 						console.log('Update response data:', responseData);
+						return true;
+
 					} catch (error) {
 						console.error('Complete update error:', error);
-						alert('Error updating club availability. Please try again later.');
+						this.alertUser('Error updating club availability. Please try again later.', 'error');
+						return false;
 					}
 				},
 
+
 				addToCart: function (club) {
 					console.log('Adding to cart:', club._id || club.id, club.subject);
-					console.log('Current cart:', this.cart);
 
 					const clubId = club._id || club.id;
 
-					if (this.cart.includes(clubId)) {
-						console.log('Club already in cart:', clubId);
-						this.alertUser(`${club.subject} is already in the cart!`, 'warning');
-						return;
-					}
-
 					if (club.availableInventory > 0) {
-						this.cart.push(clubId);
-
-						const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
-						if (clubIndex !== -1) {
-							this.clubs[clubIndex].availableInventory -= 1;
+						// Initialize or increment quantity
+						if (this.cart[clubId]) {
+							if (this.cart[clubId] < club.availableInventory) {
+								this.cart[clubId]++;
+								const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
+								if (clubIndex !== -1) {
+									this.clubs[clubIndex].availableInventory -= 1;
+								}
+								this.alertUser(`Added another ${club.subject} to the cart!`, 'success');
+							} else {
+								this.alertUser(`No more spaces available for ${club.subject}!`, 'warning');
+							}
+						} else {
+							this.$set(this.cart, clubId, 1);
+							const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
+							if (clubIndex !== -1) {
+								this.clubs[clubIndex].availableInventory -= 1;
+							}
+							this.alertUser(`${club.subject} has been added to the cart!`, 'success');
 						}
-
-						this.alertUser(`${club.subject} has been added to the cart!`, 'success');
 					} else {
 						this.alertUser(`${club.subject} is out of stock!`, 'error');
 					}
 				},
+
 				alertUser: function (message, type = 'success') {
 					const alert = {
 						message,
@@ -497,13 +542,18 @@
 						}
 					}, 3000);
 				},
+
 				removeFromCart: function (club) {
 					const clubId = club._id || club.id;
-					let index = this.cart.indexOf(clubId);
-					if (index !== -1) {
-						this.cart.splice(index, 1);
+					if (this.cart[clubId]) {
+						// Decrease quantity or remove if last item
+						if (this.cart[clubId] > 1) {
+							this.cart[clubId]--;
+						} else {
+							this.$delete(this.cart, clubId);
+						}
 
-						// Find the club in the original clubs array to restore inventory
+						// Restore inventory
 						const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
 						if (clubIndex !== -1) {
 							this.clubs[clubIndex].availableInventory++;
@@ -511,17 +561,15 @@
 					}
 				},
 				showCheckout() {
-					if (this.cart.length === 0) {
+					if (Object.keys(this.cart).length === 0) {
 						alert("Cart is empty! Please select a course to proceed.");
 						return;
 					}
 
-					// If already on checkout page, go back to courses
 					if (this.checkoutPage) {
 						this.showClubs = true;
 						this.checkoutPage = false;
 					} else {
-						// Go to checkout page
 						this.showClubs = false;
 						this.checkoutPage = true;
 					}
