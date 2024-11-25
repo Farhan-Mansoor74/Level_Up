@@ -71,6 +71,7 @@
 				</div>
 			</div>
 
+			<!-- Clubs slideshow -->
 			<div class="slideshow-container">
 				<div class="mySlides fade">
 					<div class="numbertext">1 / 3</div>
@@ -100,7 +101,7 @@
 			</div>
 		</main>
 
-		<!-- Display Clubs -->
+		<!-- Display Clubs and Sort dropdowns -->
 		<main v-if="showClubs && !checkoutPage">
 			<div class="sort-section">
 				<label for="sort">Sort by:</label>
@@ -121,7 +122,7 @@
 				<div v-for="club in searchResults" :key="club.id" class="club-card">
 					<span class="availability-tag">{{ club.availableInventory }} available</span>
 
-					<img :src="club.image" alt="Club Image" />
+					<img :src="getImagePath(club.image)" alt="Club Image" />
 					<div class="product-title-wrap">
 						<h2 v-text="club.subject"></h2>
 						<p style="font-weight: bold">
@@ -172,9 +173,26 @@
 						<div class="club-info">
 							<span class="club-name">{{ club.subject }}</span>
 							<span class="club-price">{{ club.fee }} AED per hour</span>
+							<div class="quantity-controls">
+								<span class="quantity-label">Quantity:</span>
+								<button @click="removeFromCart(club)" class="quantity-btn"
+									:disabled="club.quantity <= 0" style="color:black">
+									-
+								</button>
+								<span class="quantity-value">{{ club.quantity }}</span>
+								<button @click="addToCart(club)" class="quantity-btn"
+									:disabled="club.quantity >= originalInventory[club._id || club.id] " style="color:black">
+									+
+								</button>
+								<span class="spaces-available">
+									({{ originalInventory[club._id || club.id] - cart[club._id || club.id] || 0 }}
+									spaces available)
+								</span>
+							</div>
+							<span class="subtotal">Subtotal: {{ club.quantity * club.fee }} AED</span>
 						</div>
 						<button @click="removeFromCart(club)" class="remove-btn">
-							Remove
+							Remove All
 						</button>
 					</div>
 					<div class="cart-total">
@@ -183,9 +201,9 @@
 							<span class="price" style="color: black"><b>{{ cartTotal }} AED</b></span>
 						</p>
 					</div>
-
 					<!-- Place Order Button -->
-					<button class="place-order-btn" v-if="isOrderValid" @click="addOrder">
+					<button class="place-order-btn" v-if="isOrderValid" @click="addOrder"
+						:disabled="cartItemCount === 0">
 						Place Order
 					</button>
 				</div>
@@ -203,6 +221,7 @@
 			</div>
 		</main>
 
+		<!-- Receipt (Order Confirmation) -->
 		<main v-if="showReceipt" class="receipt-container">
 			<div class="receipt">
 				<div class="receipt-header">
@@ -226,6 +245,8 @@
 								<th>Club</th>
 								<th>Location</th>
 								<th>Price (AED)</th>
+								<th>Quantity</th>
+								<th>Subtotal</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -233,11 +254,13 @@
 								<td>{{ club.subject }}</td>
 								<td>{{ club.location }}</td>
 								<td>{{ club.fee }} AED</td>
+								<td>{{ club.quantity }}</td>
+								<td>{{ club.subtotal }}</td>
 							</tr>
 						</tbody>
 						<tfoot>
 							<tr>
-								<td colspan="2" class="total-label">Total</td>
+								<td colspan="4" class="total-label">Total</td>
 								<td class="total-amount">{{ orderDetails.total }} AED</td>
 							</tr>
 						</tfoot>
@@ -245,8 +268,8 @@
 				</div>
 
 				<div class="receipt-footer">
-					<p>Thank you for choosing Level Up!</p>
 					<p>Your clubs registration is confirmed.</p>
+					<p>Thank you for choosing Level Up!</p>
 				</div>
 
 				<button @click="goToHome" class="home-button">
@@ -256,6 +279,7 @@
 		</main>
 	</div>
 
+	<!-- Vue App -->
 	<script type="text/javascript">
 		let webstore = new Vue({
 			el: "#app",
@@ -273,6 +297,7 @@
 					date: ''
 				},
 				cart: {},
+				originalInventory: {}, // Track original inventory levels
 				searchQuery: "",
 				sortOption: "subject", // Default sorting option
 				sortOrder: "asc", // Default sort order
@@ -311,7 +336,8 @@
 							details.push({
 								...club,
 								quantity: quantity,
-								subtotal: club.fee * quantity
+								subtotal: club.fee * quantity,
+								maxAvailable: this.originalInventory[clubId] || club.availableInventory // Use original inventory for max
 							});
 						}
 					}
@@ -328,6 +354,7 @@
 				},
 			},
 			methods: {
+				// Fetches all clubs details
 				fetchAllClubs: async function () {
 					console.log('FETCHING CLUBS');
 					try {
@@ -341,14 +368,21 @@
 							throw new Error('Failed to fetch clubs');
 						}
 						const data = await response.json();
-						console.log('Fetched Clubs:', data); // Add this line
 						this.clubs = data;
 						this.searchResults = data;
+
+						// Store original inventory levels
+						data.forEach(club => {
+							const clubId = club._id || club.id;
+							this.originalInventory[clubId] = club.availableInventory;
+						});
 					} catch (error) {
 						console.error(error);
 						alert('Error fetching clubs. Please try again later.');
 					}
 				},
+
+				// Gets current date and time
 				getCurrentDate: function () {
 					const date = new Date();
 					return date.toLocaleDateString('en-US', {
@@ -359,17 +393,22 @@
 						minute: '2-digit'
 					});
 				},
+
+				// Connects image path with Render link
 				getImagePath(filename) {
 					// Update the base URL for production
 					const baseURL = "https://lu-backend-6ln8.onrender.com/images/";
 					return `${baseURL}${filename}`;
 				},
+
+				// Show home page
 				goToHome: function () {
 					this.showReceipt = false;
 					this.showClubs = false;
 					this.checkoutPage = false;
 				},
-				// You'll also need to modify the addOrder method to call updateAvailability correctly:
+
+				// Add order to database, request sent from frontend
 				addOrder: async function () {
 					this.isLoading = true;
 					try {
@@ -380,12 +419,11 @@
 								id: club._id || club.id,
 								subject: club.subject,
 								fee: club.fee,
-								quantity: club.quantity,
+								quantity: club.quantity
 							})),
 							total: this.cartTotal,
 						};
 
-						console.log('Sending order data:', orderData);
 						const response = await fetch('https://lu-backend-6ln8.onrender.com/orders', {
 							method: 'POST',
 							headers: {
@@ -398,29 +436,16 @@
 							throw new Error('Failed to place the order');
 						}
 
-						const responseData = await response.json();
-
-						// Update availability for each club in the cart
+						// Update backend inventory
 						for (let club of this.cartDetails) {
-							// Now passing quantity instead of new availability
-							const success = await this.updateAvailability(
-								club._id || club.id,
-								club.quantity
-							);
-
-							if (!success) {
-								throw new Error('Failed to update club availability');
-							}
+							await this.updateAvailability(club._id || club.id, club.quantity);
 						}
 
-						// Prepare receipt data with quantities
+						// Update receipt
 						this.orderDetails = {
 							name: this.order.name,
 							phone: this.order.phone,
-							clubs: this.cartDetails.map(club => ({
-								...club,
-								spaces: club.quantity
-							})),
+							clubs: this.cartDetails,
 							total: this.cartTotal,
 							date: this.getCurrentDate()
 						};
@@ -435,6 +460,7 @@
 						this.checkoutPage = false;
 						this.showReceipt = true;
 
+						// Refresh clubs data
 						await this.fetchAllClubs();
 
 					} catch (error) {
@@ -445,6 +471,7 @@
 					}
 				},
 
+				// Update club availability in backend
 				updateAvailability: async function (clubId, quantity) {
 					try {
 						console.log('Updating availability:', {
@@ -491,38 +518,36 @@
 					}
 				},
 
-
+				// Add items to cart
 				addToCart: function (club) {
 					console.log('Adding to cart:', club._id || club.id, club.subject);
 
 					const clubId = club._id || club.id;
+					const originalInventory = this.originalInventory[clubId];
 
-					if (club.availableInventory > 0) {
-						// Initialize or increment quantity
-						if (this.cart[clubId]) {
-							if (this.cart[clubId] < club.availableInventory) {
-								this.cart[clubId]++;
-								const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
-								if (clubIndex !== -1) {
-									this.clubs[clubIndex].availableInventory -= 1;
-								}
-								this.alertUser(`Added another ${club.subject} to the cart!`, 'success');
-							} else {
-								this.alertUser(`No more spaces available for ${club.subject}!`, 'warning');
-							}
-						} else {
-							this.$set(this.cart, clubId, 1);
-							const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
-							if (clubIndex !== -1) {
-								this.clubs[clubIndex].availableInventory -= 1;
-							}
-							this.alertUser(`${club.subject} has been added to the cart!`, 'success');
-						}
-					} else {
-						this.alertUser(`${club.subject} is out of stock!`, 'error');
+					// Check against original inventory
+					if (this.cart[clubId] && this.cart[clubId] >= originalInventory) {
+						this.alertUser(`Maximum available spaces (${originalInventory}) reached for ${club.subject}!`, 'warning');
+						return;
 					}
+
+					// Initialize or increment quantity
+					if (this.cart[clubId]) {
+						this.cart[clubId]++;
+					} else {
+						this.$set(this.cart, clubId, 1);
+					}
+
+					// Update displayed inventory
+					const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
+					if (clubIndex !== -1) {
+						this.clubs[clubIndex].availableInventory = originalInventory - this.cart[clubId];
+					}
+
+					this.alertUser(`${club.subject} has been added to the cart!`, 'success');
 				},
 
+				// Alerts for various purposes
 				alertUser: function (message, type = 'success') {
 					const alert = {
 						message,
@@ -543,6 +568,7 @@
 					}, 3000);
 				},
 
+				// Remove cart items
 				removeFromCart: function (club) {
 					const clubId = club._id || club.id;
 					if (this.cart[clubId]) {
@@ -553,13 +579,17 @@
 							this.$delete(this.cart, clubId);
 						}
 
-						// Restore inventory
+						// Restore displayed inventory based on original inventory
 						const clubIndex = this.clubs.findIndex(c => (c._id || c.id) === clubId);
 						if (clubIndex !== -1) {
-							this.clubs[clubIndex].availableInventory++;
+							const remainingInCart = this.cart[clubId] || 0;
+							this.clubs[clubIndex].availableInventory =
+								this.originalInventory[clubId] - remainingInCart;
 						}
 					}
 				},
+
+				// Shows cart and checkout
 				showCheckout() {
 					if (Object.keys(this.cart).length === 0) {
 						alert("Cart is empty! Please select a course to proceed.");
@@ -574,14 +604,20 @@
 						this.checkoutPage = true;
 					}
 				},
+
+				// SHow courses
 				viewCourses: function () {
 					this.showClubs = true;
 					this.checkoutPage = false;
 				},
+
+				// Hide others and show landing page
 				toLandingPage: function () {
 					this.showClubs = false;
 					this.checkoutPage = false;
 				},
+
+				// Sort clubs based on different parameters
 				sortClubs: function () {
 					this.clubs.sort((a, b) => {
 						let comparison = 0;
@@ -614,13 +650,18 @@
 					const phoneRegex = /^[0-9]{7,15}$/;
 					return phoneRegex.test(phone.trim());
 				},
+
+				// Validate name for checkout
 				validateName: function () {
 					this.formErrors.name = !this.isValidName(this.order.name) && this.order.name.length > 0;
 				},
+
+				// Validate phone for checkout
 				validatePhone: function () {
 					this.formErrors.phone = !this.isValidPhone(this.order.phone) && this.order.phone.length > 0;
 				},
 
+				// Time set to prevent multiple searches
 				debounce: function (func, wait) {
 					let timeout;
 					return function executedFunction(...args) {
@@ -633,6 +674,7 @@
 					};
 				},
 
+				// Search clubs request sent from frontend
 				searchClubs: async function () {
 					const query = this.searchQuery.trim();
 
@@ -679,6 +721,7 @@
 						this.searchResults = [];
 					}
 				},
+				// Used for search functionality
 				isSubstring: function (query, subject) {
 					for (
 						let i = 0;
@@ -698,6 +741,7 @@
 					}
 					return false;
 				},
+				//Slideshow function
 				showSlides: function () {
 					let slides = document.getElementsByClassName("mySlides");
 					let dots = document.getElementsByClassName("dot");

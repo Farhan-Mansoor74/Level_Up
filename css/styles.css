@@ -571,10 +571,88 @@ label {
 
 /* Cart Items */
 .checkout-club {
-	display: flex;
-	align-items: center;
-	padding: 1rem 0;
-	border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: start;
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+.club-info {
+    flex-grow: 1;
+    margin: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.quantity-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.quantity-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.quantity-value {
+    min-width: 24px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.quantity-label {
+    color: #666;
+    margin-right: 0.5rem;
+}
+
+.spaces-available {
+    color: #666;
+    font-size: 0.9em;
+    margin-left: 0.5rem;
+}
+
+.subtotal {
+    color: #2c3e50;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.remove-btn {
+    padding: 0.5rem 1rem;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.remove-btn:hover {
+    background: #cc0000;
+}
+
+.cart-total {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-top: 2px solid #eee;
+    font-size: 1.2em;
 }
 
 .cart-image {
@@ -582,11 +660,6 @@ label {
 	height: 80px;
 	object-fit: cover;
 	border-radius: 8px;
-}
-
-.club-info {
-	flex: 1;
-	margin-left: 1rem;
 }
 
 .club-name {
@@ -599,30 +672,6 @@ label {
 .club-price {
 	color: #6b7280;
 	font-size: 0.95rem;
-}
-
-/* Buttons */
-.remove-btn {
-	padding: 0.5rem 1rem;
-	border: none;
-	background: #fee2e2;
-	color: #ef4444;
-	border-radius: 6px;
-	font-size: 0.875rem;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.remove-btn:hover {
-	background: #fecaca;
-}
-
-
-/* Cart Total */
-.cart-total {
-	margin-top: 1.5rem;
-	padding-top: 1.5rem;
-	border-top: 2px solid #e5e7eb;
 }
 
 .cart-total p {
